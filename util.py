@@ -21,4 +21,3 @@ def get_process_list():
 
 
 
-r = get_process_list()import djangoimport django
