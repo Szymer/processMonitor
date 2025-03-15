@@ -1,10 +1,37 @@
 import psutil
 import time
+from pprint import pprint as pp
 
 def get_process_list():
+    
+
+    p = psutil.Process()
+    with p.oneshot():
+        p.name()  # execute internal routine once collecting multiple info
+        p.cpu_times()  # return cached value
+        p.cpu_percent()  # return cached value
+        p.create_time()  # return cached value
+        p.ppid()  # return cached value
+        p.status()  # return cached value
+  
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     process_list = []
     for p in psutil.process_iter(['pid', 'name', 'status', 'memory_info', 'cpu_percent', 'create_time']):
         try:
+            
             process_list.append({
                 "PID": p.info["pid"],
                 "Name": p.info["name"],
@@ -20,4 +47,8 @@ def get_process_list():
     return process_list
 
 
+
+x = get_process_list()
+
+pp(x)
 
