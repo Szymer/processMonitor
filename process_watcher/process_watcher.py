@@ -1,8 +1,7 @@
 import psutil
+from   datetime import datetime, timezone as tz
 import time
 from process_monitor_app.models import Process
-
-
 
 
 
@@ -11,13 +10,20 @@ class ProcessReader():
     def __init__(self):
         self.cache = {}
 
-
+    def timestamp_parser(self, timestamp: float) -> datetime:
+        naiv_dt = datetime.fromtimestamp(timestamp)
+        aware_timestamp = naiv_dt.replace(tzinfo=tz.utc)
+        return aware_timestamp
+    
     def send_process_to_db(self, p: psutil.Process) -> None:    
+        
+        
+        
         process_item = Process(
             PID =  p.pid,
             name = p.name(),
             status =  p.status(),
-            start_time = time.strftime("%Y-%m-%d %H:%M:%S"),
+            start_time = self.timestamp_parser(p._create_time),
             duration = round(time.time() - p.create_time(), 2),
             memory_usage_MB =   round(p.memory_info().rss / (1024 ** 2), 2),
             CPU_Usage_Percent = p.cpu_percent(interval=0.0)
@@ -36,7 +42,6 @@ class ProcessReader():
                 CPU_Usage_Percent=process_item.CPU_Usage_Percent
             )
   
-
     
     def delete_process_from_db(self, p: psutil.Process):
         process = Process.objects.filter(PID = p.pid)
@@ -54,4 +59,22 @@ class ProcessReader():
 
 
 
+def run(self):        
+        pr = ProcessReader()
+        while True:
+            print("Checking processes...")
+            processes = pr.process_classification(psutil.process_iter())
+
+            for process in processes['to_add']:
+                try:
+                    pr.send_process_to_db(process)
+                except Exception as e:
+                    self.stdout.write(f"Error processing {process.pid}: {e}")
+
+            for process in processes['to_delete']:
+                    pr.delete_process_from_db(process)
+                    del pr.cache[process]
+
+            self.stdout.write('Sleeping for 15 seconds...')
+            time.sleep(15)
 
