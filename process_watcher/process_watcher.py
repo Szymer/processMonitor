@@ -17,8 +17,6 @@ class ProcessReader():
     
     def send_process_to_db(self, p: psutil.Process) -> None:    
         
-        
-        
         process_item = Process(
             PID =  p.pid,
             name = p.name(),

@@ -1,0 +1,64 @@
+{% extends "index.html" %} 
+
+{% load django_tables2 %}
+
+{% block title %}
+    <title> PROCESSES </title>
+{% endblock title %}
+
+{% block content %}
+    <div class="container">
+        <!-- Nagłówek strony -->
+        <h1>Processes</h1>
+        
+
+        <form method="get" hx-get=".">
+            {{ filter.form.as_p }} 
+            <button type="submit">Apply Filters</button>
+        </form>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th><a href="#" hx-get="?sort=id" hx-target="#process-table" hx-trigger="click">PID</a></th>
+                    <th><a href="#" hx-get="?sort=name" hx-target="#process-table" hx-trigger="click">Name</a></th>
+                    <th><a href="#" hx-get="?sort=status" hx-target="#process-table" hx-trigger="click">Status</a></th>
+                    <th><a href="#" hx-get="?sort=start_time" hx-target="#process-table" hx-trigger="click">Start Time</a></th>
+                    <th><a href="#" hx-get="?sort=duration" hx-target="#process-table" hx-trigger="click">Duration</a></th>
+                    <th><a href="#" hx-get="?sort=memory_usage_MB" hx-target="#process-table" hx-trigger="click">Memory %</a></th>
+                    <th><a href="#" hx-get="?sort=CPU_Usage_Percent" hx-target="#process-table" hx-trigger="click">CPU</a></th>
+                </tr>
+            </thead>
+            <tbody id="process-table">
+                {% for process in processes %}
+                    <tr>
+                        <td>{{ process.id }}</td>
+                        <td>{{ process.name }}</td>
+                        <td>{{ process.status }}</td>
+                        <td>{{ process.start_time }}</td>
+                        <td>{{ process.duration }}</td>
+                        <td>{{ process.memory_usage_MB }}</td>
+                        <td>{{ process.CPU_Usage_Percent }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pagination">
+            <span class="step-links">
+                {% if processes.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ processes.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ processes.number }} of {{ processes.paginator.num_pages }}.
+                </span>
+
+                {% if processes.has_next %}
+                    <a href="?page={{ processes.next_page_number }}">next</a>
+                    <a href="?page={{ processes.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+{% endblock content %}
+
