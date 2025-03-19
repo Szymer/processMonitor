@@ -1,11 +1,11 @@
 {% extends "index.html" %} 
 
-
-<script>
+ 
+ <script>
     document.body.addEventListener('htmx:configRequest', function(event) {
         event.detail.headers['X-CSRFToken'] = document.querySelector('[name=csrfmiddlewaretoken]').value;
     });
-</script>
+</script> 
 
 {% block title %}
     <title> PROCESSES </title>
@@ -14,40 +14,42 @@
 {% block content %}
 {% load django_tables2 %}
 
-<h1>Processes</h1>
-<button hx-post="save/" 
-            hx-trigger="click" 
-            class="stop-btn">Snapshot</button>
+<<div class="container">
+    <h1>Processes</h1>
 
-<!-- Sekcja filtrów nad tabelą -->
-<form method="get" class="filters">
-    {{ filter.form.as_p }}
-    <button type="submit">Apply Filters</button>
-</form>
-processes/save/
-<!-- Tabela -->
-<div class="table-container">
-    {% render_table table %}
-</div>
+    <button hx-post="save/" hx-trigger="click" class="snapshot-btn">Snapshot</button>
 
-<!-- Paginacja POD tabelą -->
-<div class="pagination">
-    <span class="step-links">
+    <!-- Filtry -->
+    <div class="filters">
+        <form method="get" class="filter-form">
+            {{ filter.form.as_p }}
+            <button type="submit">Apply Filters</button>
+        </form>
+    </div>
+
+    <!-- Tabela -->
+    <div class="table-container">
+        {% render_table table %}
+    </div>
+
+    <!-- Paginacja -->
+    <div class="pagination">
         {% if table.page.has_previous %}
-            <a href="?page=1">&laquo; first</a>
-            <a href="?page={{ table.page.previous_page_number }}">previous</a>
+            <a href="?page=1" class="page-link">&laquo; First</a>
+            <a href="?page={{ table.page.previous_page_number }}" class="page-link">Previous</a>
         {% endif %}
 
-        <span class="current">
+        <span class="page-info">
             Page {{ table.page.number }} of {{ table.page.paginator.num_pages }}.
         </span>
 
         {% if table.page.has_next %}
-            <a href="?page={{ table.page.next_page_number }}">next</a>
-            <a href="?page={{ table.page.paginator.num_pages }}">last &raquo;</a>
+            <a href="?page={{ table.page.next_page_number }}" class="page-link">Next</a>
+            <a href="?page={{ table.page.paginator.num_pages }}" class="page-link">Last &raquo;</a>
         {% endif %}
-    </span>
+    </div>
 </div>
+
 
 {% endblock content %}
 

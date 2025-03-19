@@ -10,6 +10,9 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+
 
 from process_monitor_app.models import Process, StoppedProcess, StoredProcess,Snapshot
 
@@ -27,7 +30,7 @@ class LoginView(View):
         return render(request, "login.html")
     
 class ProcessFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(lookup_expr='icontains', label="Search by Name")  # Filtrowanie po nazwie procesu
+    name = django_filters.CharFilter(lookup_expr='icontains')  # Filtrowanie po nazwie procesu
     class Meta:
         model = Process
         fields = ['PID','name', 'status']
@@ -132,8 +135,8 @@ class ProcessListView(SingleTableMixin, FilterView):
         
     def render_to_response(self, context, **response_kwargs):
         """Jeśli żądanie pochodzi od HTMX, renderuj tylko tabelę."""
-        if self.request.user.is_authenticated:
-            if self.request.htmx:
+        if self.request.user.is_authenticated == False:
+            if self.request.htmx: 
                 return render(self.request, "processes_table.html", context)
             return super().render_to_response(context, **response_kwargs)
         else:   
