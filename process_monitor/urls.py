@@ -16,11 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from process_monitor_app.views import HomeView, LoginView, ProcessListView
+from process_monitor_app.views import HomeView, LoginView, ProcessListView, StopProcessView, SnapshotView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('home/', HomeView.as_view(), name= "home"),
     path('login/', LoginView.as_view(), name='login'),
-    path('processes/', ProcessListView.as_view(), name='process_list')
+    path('processes/', ProcessListView.as_view(), name='process_list'),
+    path('processes/stop/<int:process_id>&<int:pid>/', StopProcessView.as_view(), name='stop_process'),
+    path('processes/save/', SnapshotView.as_view(), name='snapshot'),
 ]

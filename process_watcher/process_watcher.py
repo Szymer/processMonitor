@@ -1,3 +1,4 @@
+import os
 import psutil
 from   datetime import datetime, timezone as tz
 import time
@@ -24,8 +25,10 @@ class ProcessReader():
             start_time = self.timestamp_parser(p._create_time),
             duration = round(time.time() - p.create_time(), 2),
             memory_usage_MB =   round(p.memory_info().rss / (1024 ** 2), 2),
-            CPU_Usage_Percent = p.cpu_percent(interval=0.0)
+            CPU_Usage_Percent = p.cpu_percent(interval=1.0)
             )
+        if p.cpu_percent(interval=0.0) > 0:
+            print(f"ADDED {p.pid}")
         self.cache[p] = process_item
       
         if not Process.objects.filter(PID = process_item.PID).exists():
@@ -73,6 +76,7 @@ def run(self):
                     pr.delete_process_from_db(process)
                     del pr.cache[process]
 
-            self.stdout.write('Sleeping for 15 seconds...')
-            time.sleep(15)
+            # self.stdout.write('Sleeping for 15 seconds...')
+            frequency = os.getenv('FREQUENCY', 15)
+            time.sleep(frequency)
 

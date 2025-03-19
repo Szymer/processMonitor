@@ -1,64 +1,54 @@
 {% extends "index.html" %} 
 
-{% load django_tables2 %}
+
+<script>
+    document.body.addEventListener('htmx:configRequest', function(event) {
+        event.detail.headers['X-CSRFToken'] = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    });
+</script>
 
 {% block title %}
     <title> PROCESSES </title>
 {% endblock title %}
 
 {% block content %}
-    <div class="container">
-        <!-- Nagłówek strony -->
-        <h1>Processes</h1>
-        
+{% load django_tables2 %}
 
-        <form method="get" hx-get=".">
-            {{ filter.form.as_p }} 
-            <button type="submit">Apply Filters</button>
-        </form>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th><a href="#" hx-get="?sort=id" hx-target="#process-table" hx-trigger="click">PID</a></th>
-                    <th><a href="#" hx-get="?sort=name" hx-target="#process-table" hx-trigger="click">Name</a></th>
-                    <th><a href="#" hx-get="?sort=status" hx-target="#process-table" hx-trigger="click">Status</a></th>
-                    <th><a href="#" hx-get="?sort=start_time" hx-target="#process-table" hx-trigger="click">Start Time</a></th>
-                    <th><a href="#" hx-get="?sort=duration" hx-target="#process-table" hx-trigger="click">Duration</a></th>
-                    <th><a href="#" hx-get="?sort=memory_usage_MB" hx-target="#process-table" hx-trigger="click">Memory %</a></th>
-                    <th><a href="#" hx-get="?sort=CPU_Usage_Percent" hx-target="#process-table" hx-trigger="click">CPU</a></th>
-                </tr>
-            </thead>
-            <tbody id="process-table">
-                {% for process in processes %}
-                    <tr>
-                        <td>{{ process.id }}</td>
-                        <td>{{ process.name }}</td>
-                        <td>{{ process.status }}</td>
-                        <td>{{ process.start_time }}</td>
-                        <td>{{ process.duration }}</td>
-                        <td>{{ process.memory_usage_MB }}</td>
-                        <td>{{ process.CPU_Usage_Percent }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <div class="pagination">
-            <span class="step-links">
-                {% if processes.has_previous %}
-                    <a href="?page=1">&laquo; first</a>
-                    <a href="?page={{ processes.previous_page_number }}">previous</a>
-                {% endif %}
+<h1>Processes</h1>
+<button hx-post="save/" 
+            hx-trigger="click" 
+            class="stop-btn">Snapshot</button>
 
-                <span class="current">
-                    Page {{ processes.number }} of {{ processes.paginator.num_pages }}.
-                </span>
+<!-- Sekcja filtrów nad tabelą -->
+<form method="get" class="filters">
+    {{ filter.form.as_p }}
+    <button type="submit">Apply Filters</button>
+</form>
+processes/save/
+<!-- Tabela -->
+<div class="table-container">
+    {% render_table table %}
+</div>
 
-                {% if processes.has_next %}
-                    <a href="?page={{ processes.next_page_number }}">next</a>
-                    <a href="?page={{ processes.paginator.num_pages }}">last &raquo;</a>
-                {% endif %}
-            </span>
-        </div>
-    </div>
+<!-- Paginacja POD tabelą -->
+<div class="pagination">
+    <span class="step-links">
+        {% if table.page.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ table.page.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ table.page.number }} of {{ table.page.paginator.num_pages }}.
+        </span>
+
+        {% if table.page.has_next %}
+            <a href="?page={{ table.page.next_page_number }}">next</a>
+            <a href="?page={{ table.page.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
 {% endblock content %}
 
+<meta name="csrf-token" content="{{ csrf_token }}">
