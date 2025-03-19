@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from process_monitor_app.views import HomeView, LoginView, ProcessListView, StopProcessView, SnapshotView
+from process_monitor_app.views import HomeView, LoginView, ProcessListView, StopProcessView, SnapshotView, SnapshotListView, ExportSnapshotView, SnapshotDetailedView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,4 +25,8 @@ urlpatterns = [
     path('processes/', ProcessListView.as_view(), name='process_list'),
     path('processes/stop/<int:process_id>&<int:pid>/', StopProcessView.as_view(), name='stop_process'),
     path('processes/save/', SnapshotView.as_view(), name='snapshot'),
+    path('snapshots/', SnapshotListView.as_view() , name='snapshot_list'),
+    path('snapshots/export/<int:snap_id>', ExportSnapshotView.as_view() , name='export_snapshot'),
+    path('snapshots/detail/<int:snap_id>', SnapshotDetailedView.as_view() , name='snapshot_detail'),
+    
 ]
