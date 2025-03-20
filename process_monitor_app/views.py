@@ -17,6 +17,7 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
+from django.db.models import Q
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
@@ -107,7 +108,8 @@ class SnapshotView(View):
                     duration = process.duration,
                     memory_usage_MB = process.memory_usage_MB,
                     CPU_Usage_Percent = process.CPU_Usage_Percent,
-                    snapshot = snapshot
+                    snapshot = snapshot,
+     
                 )
                 stored_process.save()
                 # snapshot..add(stored_process)
@@ -143,7 +145,6 @@ class SnapshotTable(tables.Table):
 
     class Meta:
         model = Process
-        template_name = "django_tables2/bootstrap5.html" # Szablon Bootstrapa
         fields = ("id", "author")
         attrs = {"class": "table table-striped"}  
 
@@ -155,12 +156,29 @@ class SnapshotListView(SingleTableMixin, View):
     paginate_by = 42    
     ordering = ['id']
      
+     
+     
+     
+     
     def get(self, request, *args, **kwargs):
 
         if self.request.user.is_authenticated:
             snapshots = Snapshot.objects.all().order_by(*self.ordering)  #
             table = self.table_class(snapshots)
-            context = {"table": table}
+            total_cpu = 0.0
+            total_ram = 0.0
+            number_of_processes = 0
+            for snap in snapshots:
+                snap_processes = StoredProcess.objects.filter(snapshot_id=snap.id)
+                total_cpu += snap_processes.aggregate(Sum('CPU_Usage_Percent'))['CPU_Usage_Percent__sum'] or 0
+                total_ram += snap_processes.aggregate(Sum('memory_usage_MB'))['memory_usage_MB__sum'] or 0
+                number_of_processes += len(snap_processes)
+
+            context = {"table": table,
+                        'total_cpu' : total_cpu,
+                        'total_ram' : total_ram,
+                        'nop' : number_of_processes
+                       }
             
             if request.htmx:
                 return render(request, "snap_table.html", context)  
@@ -235,9 +253,15 @@ class ProcessListView(SingleTableMixin, FilterView):
     filterset_class = ProcessFilter
     paginate_by = 42
     ordering = ['PID']  
+    
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["last_loaded"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return context
 
 
-        
+
     def render_to_response(self, context, **response_kwargs):
         """Jeśli żądanie pochodzi od HTMX, renderuj tylko tabelę."""
         if self.request.user.is_authenticated:
@@ -260,26 +284,23 @@ class SnapshotDetailedView(SingleTableMixin, FilterView):
     
     def get_queryset(self):
         """Filtrowanie rekordów StoredProcess na podstawie snapshot_id"""
-        snapshot_id = self.kwargs.get("snap_id")  # Pobierz ID Snapshota z URL
-        return StoredProcess.objects.filter(snapshot_id=snapshot_id)  # Filtrujemy tylko te procesy
+        snapshot_id = self.kwargs.get("snap_id")  
+        return StoredProcess.objects.filter(snapshot_id=snapshot_id)  
     
     
     def get_context_data(self, **kwargs):
         """Dodaj sumę CPU i RAM do kontekstu widoku"""
         context = super().get_context_data(**kwargs)
         snap_proceses = self.get_queryset()
-        # Obliczamy sumy CPU i RAM dla wszystkich StoredProcess w danym Snapshocie
         total_cpu = snap_proceses.aggregate(Sum('CPU_Usage_Percent'))['CPU_Usage_Percent__sum'] or 0
         total_ram = snap_proceses.aggregate(Sum('memory_usage_MB'))['memory_usage_MB__sum'] or 0
-
-        # Dodajemy do kontekstu
+        number_of_processes = len(snap_proceses)
         context['total_cpu'] = total_cpu
         context['total_ram'] = total_ram
-     
-
+        context['nop'] = number_of_processes
         return context
 
-    def render_to_response(self, context, show_stop,  **response_kwargs):
+    def render_to_response(self, context, **response_kwargs):
 
         if self.request.user.is_authenticated:
             if self.request.htmx: 
@@ -287,8 +308,6 @@ class SnapshotDetailedView(SingleTableMixin, FilterView):
             return super().render_to_response(context, **response_kwargs)
         else:   
             return redirect('login')
- 
- 
  
  
 class StopedTable(tables.Table):
@@ -312,7 +331,6 @@ class StopedTable(tables.Table):
         attrs = {"class": "table table-striped"}  
 
  
- 
 class StoppedProcessesView(SingleTableMixin, View):
     model = StoppedProcess
     table_class = StopedTable
@@ -335,7 +353,3 @@ class StoppedProcessesView(SingleTableMixin, View):
             return redirect('login')
 
 
- 
-        
-        
-    

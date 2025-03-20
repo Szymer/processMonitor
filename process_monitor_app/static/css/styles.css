@@ -91,7 +91,7 @@ table {
 
 /* Nagłówki tabeli */
 th {
-    background-color: #007BFF;
+    background-color: #080808;
     color: white;
     padding: 12px;
     text-transform: uppercase;
@@ -99,7 +99,7 @@ th {
 }
 
 th:hover {
-    background-color: #0056b3;
+    background-color: #a4aab1;
 }
 
 /* Komórki tabeli */

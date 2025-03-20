@@ -32,7 +32,7 @@ class StoredProcess(models.Model):
     memory_usage_MB = models.FloatField()
     CPU_Usage_Percent = models.FloatField()
     snapshot = models.ForeignKey(Snapshot, on_delete=models.CASCADE, related_name="stored_processes")
-    StoppedProcess = models.ForeignKey("StoppedProcess", on_delete=models.CASCADE, related_name="stored_processes")
+
 
     def __str__(self):
         return f"[Stored] {self.name} (PID: {self.PID})"
@@ -40,6 +40,10 @@ class StoredProcess(models.Model):
 class StoppedProcess(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     author = models.CharField(max_length=200)
+    name =  models.CharField(max_length=200, db_default= "Unknow")
+    
+    def __str__(self):
+        return f"Process {self.name} stopped by {self.author} at {self.timestamp}"
 
 
 

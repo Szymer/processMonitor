@@ -2,7 +2,7 @@ import os
 import psutil
 from   datetime import datetime, timezone as tz
 import time
-from process_monitor_app.models import Process
+from process_monitor_app.models import Process, Snapshot
 
 
 
@@ -17,7 +17,8 @@ class ProcessReader():
         return aware_timestamp
     
     def send_process_to_db(self, p: psutil.Process) -> None:    
-        
+        if p.pid == 0:
+            return 
         process_item = Process(
             PID =  p.pid,
             name = p.name(),
@@ -52,6 +53,11 @@ class ProcessReader():
 
     def process_classification(self, processes: psutil.process_iter):
         cached_processes  = self.cache
+        
+        if len(cached_processes)==0:
+            db_processes = Process.objects.all().delete()
+            db_processes2 = Snapshot.objects.all().delete()
+        
         processes = set(processes)
         to_delete = cached_processes.keys() - processes
         to_add = processes - cached_processes.keys()
@@ -72,15 +78,11 @@ def run(self):
                 except Exception as e:
                     if "process no longer exists" in str(e):
                         pr.delete_process_from_db(process)
-               
-                        
-                    # self.stdout.write(f"Error processing {process.pid}: {e}")
-
             for process in processes['to_delete']:
                     pr.delete_process_from_db(process)
                     del pr.cache[process]
 
             # self.stdout.write('Sleeping for 15 seconds...')
-            frequency = os.getenv('FREQUENCY', 2)
+            frequency = os.getenv('FREQUENCY', 15)
             time.sleep(frequency)
 
