@@ -70,13 +70,17 @@ def run(self):
                 try:
                     pr.send_process_to_db(process)
                 except Exception as e:
-                    self.stdout.write(f"Error processing {process.pid}: {e}")
+                    if "process no longer exists" in str(e):
+                        pr.delete_process_from_db(process)
+               
+                        
+                    # self.stdout.write(f"Error processing {process.pid}: {e}")
 
             for process in processes['to_delete']:
                     pr.delete_process_from_db(process)
                     del pr.cache[process]
 
             # self.stdout.write('Sleeping for 15 seconds...')
-            frequency = os.getenv('FREQUENCY', 15)
+            frequency = os.getenv('FREQUENCY', 2)
             time.sleep(frequency)
 

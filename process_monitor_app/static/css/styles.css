@@ -168,3 +168,33 @@ tr:hover {
 .pagination a:hover {
     background-color: #0056b3;
 }
+
+stats-widget {
+    background-color: #f5f5f5;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-around;
+}
+.stats-widget div {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+}
+.snapshot-btn.htmx-request {
+    width: 120px !important;
+    height: 40px !important;
+}
+.snapshot-btn {
+    width: 120px; /* Ustaw stałą szerokość */
+    height: 40px;  /* Ustaw stałą wysokość */
+    transition: none; /* Wyłącz animacje */
+}
+.htmx-request .snapshot-btn {
+    visibility: normal; /* Ukryj oryginalny przycisk */
+}
+
+.htmx-request .loading-indicator {
+    display: inline-block;
+}

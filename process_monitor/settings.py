@@ -89,7 +89,7 @@ DATABASES = {
         'HOST': '127.0.0.1',
         'PORT' : '5433',
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': "processes_monitor",
+        'NAME': "process_monitor2",
         'USER': 'postgres',
         'PASSWORD': 'coderslab',
     }

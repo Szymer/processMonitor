@@ -6,27 +6,22 @@
         event.detail.headers['X-CSRFToken'] = document.querySelector('[name=csrfmiddlewaretoken]').value;
     });
 </script> 
-    <meta http-equiv="refresh" content="30">
+
 {% block title %}
-    <title> PROCESSES </title>
+    <title> SNAP DETAILS </title>
 {% endblock title %}
 
 {% block content %}
 {% load django_tables2 %}
 
-<div class="container">
-    <h1>Processes</h1>
+<<div class="container">
+    <h1>Snapshot Processes</h1>
 
-    <button hx-post="save/" 
-        hx-trigger="click" 
-        hx-indicator=".loading-indicator"
-        class="snapshot-btn">
-    Snapshot
-    </button>
-
-<div class="loading-indicator" style="display: none;">
-    Saving...
-</div>
+    {% comment %} <button hx-post="save/" hx-trigger="click" class="snapshot-btn">Snapshot</button> {% endcomment %}
+    <div class="stats-widget">
+        <div>🖥️ Total CPU Usage: <span>{{ total_cpu|floatformat:2 }}%</span></div>
+        <div>💾 Total RAM Usage: <span>{{ total_ram|floatformat:2 }} MB</span></div>
+    </div>
 
     <!-- Filtry -->
     <div class="filters">

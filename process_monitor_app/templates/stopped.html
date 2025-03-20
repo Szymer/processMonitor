@@ -6,35 +6,17 @@
         event.detail.headers['X-CSRFToken'] = document.querySelector('[name=csrfmiddlewaretoken]').value;
     });
 </script> 
-    <meta http-equiv="refresh" content="30">
+
 {% block title %}
-    <title> PROCESSES </title>
+    <title> STOPPED PROCESSES </title>
 {% endblock title %}
 
 {% block content %}
 {% load django_tables2 %}
 
-<div class="container">
-    <h1>Processes</h1>
+<<div class="container">
+    <h1>STOPPED PROCESSES </h1
 
-    <button hx-post="save/" 
-        hx-trigger="click" 
-        hx-indicator=".loading-indicator"
-        class="snapshot-btn">
-    Snapshot
-    </button>
-
-<div class="loading-indicator" style="display: none;">
-    Saving...
-</div>
-
-    <!-- Filtry -->
-    <div class="filters">
-        <form method="get" class="filter-form">
-            {{ filter.form.as_p }}
-            <button type="submit">Apply Filters</button>
-        </form>
-    </div>
 
     <!-- Tabela -->
     <div class="table-container">
@@ -47,10 +29,6 @@
             <a href="?page=1" class="page-link">&laquo; First</a>
             <a href="?page={{ table.page.previous_page_number }}" class="page-link">Previous</a>
         {% endif %}
-
-        <span class="page-info">
-            Page {{ table.page.number }} of {{ table.page.paginator.num_pages }}.
-        </span>
 
         {% if table.page.has_next %}
             <a href="?page={{ table.page.next_page_number }}" class="page-link">Next</a>

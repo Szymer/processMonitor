@@ -30,10 +30,6 @@
             <a href="?page={{ table.page.previous_page_number }}" class="page-link">Previous</a>
         {% endif %}
 
-        {% comment %} <span class="page-info">
-            Page {{ table.page.number }} of {{ table.page.paginator.num_pages }}.
-        </span> {% endcomment %}
-
         {% if table.page.has_next %}
             <a href="?page={{ table.page.next_page_number }}" class="page-link">Next</a>
             <a href="?page={{ table.page.paginator.num_pages }}" class="page-link">Last &raquo;</a>
