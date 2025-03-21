@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process_monitor_app', '0002_stoppedprocess_name'),
+        ("process_monitor_app", "0002_stoppedprocess_name"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='storedprocess',
-            name='StoppedProcess',
+            model_name="storedprocess",
+            name="StoppedProcess",
         ),
     ]

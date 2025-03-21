@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process_monitor_app', '0001_initial'),
+        ("process_monitor_app", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='stoppedprocess',
-            name='name',
-            field=models.CharField(db_default='Unknow', max_length=200),
+            model_name="stoppedprocess",
+            name="name",
+            field=models.CharField(db_default="Unknow", max_length=200),
         ),
     ]
