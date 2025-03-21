@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'process_monitor_app.apps.ProcessMonitorAppConfig',
     'django_htmx',
     'django_tables2',
+    "import_export",
 ]
 
 MIDDLEWARE = [

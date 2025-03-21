@@ -4,7 +4,7 @@ import psutil
 import django_tables2 as tables
 import django_filters
 import xlwt
-from  datetime import datetime
+from  datetime import datetime, timezone
 
 
 
@@ -51,7 +51,6 @@ class ProcessFilter(django_filters.FilterSet):
     class Meta:
         model = Process
         fields = ['PID','name', 'status']
-
 class StopProcessView(View):
     
     def post(self, request, process_id, pid):
@@ -131,90 +130,19 @@ class SnapshotTable(tables.Table):
         process_detail_url = reverse("snapshot_detail", args=[record.id])  # Ścieżka do widoku szczegółów procesu
         return format_html('<a href="{}" class="process-link"> Detail</a>', process_detail_url, )
 
-    
     def render_export_to_excel(self, record):
         export_url = reverse("export_snapshot", args=[record.id])
         return format_html(
-          '<button hx-post="{}" '
-            'hx-trigger="click" '
-            'hx-target="closest tr" '
-            'hx-swap="outerHTML" '
-            'class="stop-btn">Export</button>',
+            '<a href="{}" class="stop-btn" download>Export</a>',
             export_url
-             )
-
+        )
     class Meta:
         model = Process
         fields = ("id", "author")
-        attrs = {"class": "table table-striped"}  
 
+
+class SanpShotProcessTable(tables.Table):
     
-class SnapshotListView(SingleTableMixin, View):
-    model = Snapshot
-    table_class = SnapshotTable
-    template_name = 'snaps.html'
-    paginate_by = 42    
-    ordering = ['id']
-     
-     
-     
-     
-     
-    def get(self, request, *args, **kwargs):
-
-        if self.request.user.is_authenticated:
-            snapshots = Snapshot.objects.all().order_by(*self.ordering)  #
-            table = self.table_class(snapshots)
-            total_cpu = 0.0
-            total_ram = 0.0
-            number_of_processes = 0
-            for snap in snapshots:
-                snap_processes = StoredProcess.objects.filter(snapshot_id=snap.id)
-                total_cpu += snap_processes.aggregate(Sum('CPU_Usage_Percent'))['CPU_Usage_Percent__sum'] or 0
-                total_ram += snap_processes.aggregate(Sum('memory_usage_MB'))['memory_usage_MB__sum'] or 0
-                number_of_processes += len(snap_processes)
-
-            context = {"table": table,
-                        'total_cpu' : total_cpu,
-                        'total_ram' : total_ram,
-                        'nop' : number_of_processes
-                       }
-            
-            if request.htmx:
-                return render(request, "snap_table.html", context)  
-            
-            return render(request, self.template_name, context)  
-        else:
-            return redirect('login')
-
-
-class ExportSnapshotView(View):
-    
-    def post(self, request, snap_id):
-        snapshot = Snapshot.objects.get(id=snap_id)
-        response = HttpResponse(content_type='application/ms-excel')
-        response['Content-Disposition'] = f'attachment; filename="snapshot_{snap_id}.xls"'
-        wb = xlwt.Workbook(encoding='utf-8')
-        ws = wb.add_sheet('Snapshot')
-        row_num = 0
-        font_style = xlwt.XFStyle()
-        font_style.font.bold = True
-        columns = ['ID', 'Timestamp', 'Author', 'Processes']
-        for col_num in range(len(columns)):
-            ws.write(row_num, col_num, columns[col_num], font_style)
-        font_style = xlwt.XFStyle()
-        for process in snapshot.processes.all():
-            row_num += 1
-            row = [process.id, process.timestamp, process.author, process.processes]
-            for col_num in range(len(row)):
-                ws.write(row_num, col_num, row[col_num], font_style)
-        wb.save(response)
-        return response
-
-       
-class ProcessTable(tables.Table):
-    
-    stop = tables.Column(empty_values=(), orderable=False, verbose_name="Action")
     PID = tables.Column(orderable=True)
     name = tables.Column(orderable=True)
     status = tables.Column(orderable=True)
@@ -223,59 +151,15 @@ class ProcessTable(tables.Table):
     memory_usage_MB = tables.Column(orderable=True, verbose_name="Memory (MB)")
     CPU_Usage_Percent = tables.Column(orderable=True, verbose_name="CPU (%)")
     
-    def __init__(self, *args, show_stop=True, **kwargs):
-        super().__init__(*args, **kwargs)
-        if not show_stop:
-            del self.base_columns['stop']
-    
-    def render_stop(self, record):
-        stop_url = reverse("stop_process", args=[ record.id, record.PID])
-        return format_html(
-          '<button hx-post="{}" '
-            'hx-trigger="click" '
-            'hx-confirm="Are you sure you want to stop this process?" '
-            'hx-target="closest tr" '
-            'hx-swap="outerHTML" '
-            'class="stop-btn">Stop</button>',
-            stop_url
-             )
     class Meta:
         # model = Process
-        template_name = "django_tables2/bootstrap5.html" 
         fields = ("PID", "name", "status", "start_time", "duration", "memory_usage_MB", "CPU_Usage_Percent")
-        attrs = {"class": "table table-striped"}  
 
-
-class ProcessListView(SingleTableMixin, FilterView):
-    model = Process
-    table_class = ProcessTable
-    template_name = 'htmxprocess.html'
-    filterset_class = ProcessFilter
-    paginate_by = 42
-    ordering = ['PID']  
     
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["last_loaded"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        return context
-
-
-
-    def render_to_response(self, context, **response_kwargs):
-        """Jeśli żądanie pochodzi od HTMX, renderuj tylko tabelę."""
-        if self.request.user.is_authenticated:
-            if self.request.htmx: 
-                return render(self.request, "processes_table.html", context)
-            return super().render_to_response(context, **response_kwargs)
-        else:   
-            return redirect('login')
-
-
 class SnapshotDetailedView(SingleTableMixin, FilterView):
     
     model = StoredProcess
-    table_class = ProcessTable
+    table_class = SanpShotProcessTable
     template_name = 'snap_detail.html'
     filterset_class = ProcessFilter
     paginate_by = 42
@@ -308,8 +192,136 @@ class SnapshotDetailedView(SingleTableMixin, FilterView):
             return super().render_to_response(context, **response_kwargs)
         else:   
             return redirect('login')
- 
- 
+class SnapshotListView(SingleTableMixin, View):
+    model = Snapshot
+    table_class = SnapshotTable
+    template_name = 'snaps.html'
+    paginate_by = 42    
+    ordering = ['id']
+     
+     
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            snapshots = Snapshot.objects.all().order_by(*self.ordering)  #
+            table = self.table_class(snapshots)
+            total_cpu = 0.0
+            total_ram = 0.0
+            number_of_processes = 0
+            for snap in snapshots:
+                snap_processes = StoredProcess.objects.filter(snapshot_id=snap.id)
+                total_cpu += snap_processes.aggregate(Sum('CPU_Usage_Percent'))['CPU_Usage_Percent__sum'] or 0
+                total_ram += snap_processes.aggregate(Sum('memory_usage_MB'))['memory_usage_MB__sum'] or 0
+                number_of_processes += len(snap_processes)
+
+            context = {"table": table,
+                        'total_cpu' : total_cpu,
+                        'total_ram' : total_ram,
+                        'nop' : number_of_processes
+                       }
+            
+            if request.htmx:
+                return render(request, "snap_table.html", context)  
+            
+            return render(request, self.template_name, context)  
+        else:
+            return redirect('login')
+
+
+class ExportSnapshotView(View):
+    
+    def get(self, request, snap_id):
+        snapshot = Snapshot.objects.get(id=snap_id)
+        processes = StoredProcess.objects.filter(snapshot_id = snapshot.id)
+        wb = xlwt.Workbook(encoding='utf-8')
+        ws = wb.add_sheet('Proceses')
+        row_num = 0
+        font_style = xlwt.XFStyle()
+        font_style.font.bold = True
+        columns = ['PID','Name','STATUS', 'Start Time', 'Duration sek.', 'Memory MB', 'CPU %' ]
+        for col_num, column_title in enumerate(columns):
+            ws.write(0, col_num, column_title, font_style)
+        font_style = xlwt.XFStyle()
+        for process in processes:
+            row_num += 1
+            row = [process.PID, process.name, process.status, process.start_time, process.duration, process.memory_usage_MB, process.CPU_Usage_Percent]
+            for col_num, value in enumerate(row):
+                font_style = xlwt.XFStyle()
+                if isinstance(value, datetime):
+                    date_filed = row[col_num]
+                    date_naiv = date_filed.replace(tzinfo=None)
+                    font_style.num_format_str = 'dd/mm/yyyy hh:mm:ss'
+                if value is None:
+                    value = 'null'
+                try:
+                    ws.write(row_num, col_num, row[col_num], font_style)
+                except Exception as e:
+                    print(e)
+        response = HttpResponse(
+            headers={
+                    "Content-Type": "application/vnd.ms-excel",
+                    "Content-Disposition": f'attachment; filename="snapshot_by_{snapshot.author}_{snapshot.timestamp}.xls"',
+                    })  
+        wb.save(response) 
+        return response
+
+       
+class ProcessTable(tables.Table):
+    
+    stop = tables.Column(empty_values=(), orderable=False, verbose_name="Action")
+    PID = tables.Column(orderable=True)
+    name = tables.Column(orderable=True)
+    status = tables.Column(orderable=True)
+    start_time = tables.Column(orderable=True)
+    duration = tables.Column(orderable=True)
+    memory_usage_MB = tables.Column(orderable=True, verbose_name="Memory (MB)")
+    CPU_Usage_Percent = tables.Column(orderable=True, verbose_name="CPU (%)")
+    
+    def __init__(self, *args, show_stop=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not show_stop:
+            del self.base_columns['stop']
+    
+    def render_stop(self, record):
+        stop_url = reverse("stop_process", args=[ record.id, record.PID])
+        return format_html(
+          '<button hx-post="{}" '
+            'hx-trigger="click" '
+            'hx-confirm="Are you sure you want to stop this process?" '
+            'hx-target="closest tr" '
+            'hx-swap="outerHTML" '
+            'class="btn btn-danger">Stop</button>',
+            stop_url
+             )
+    class Meta:
+        fields = ("PID", "name", "status", "start_time", "duration", "memory_usage_MB", "CPU_Usage_Percent")
+
+
+class ProcessListView(SingleTableMixin, FilterView):
+    model = Process
+    table_class = ProcessTable
+    template_name = 'htmxprocess.html'
+    filterset_class = ProcessFilter
+    paginate_by = 42
+    ordering = ['PID']  
+    
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["last_loaded"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return context
+
+
+
+    def render_to_response(self, context, **response_kwargs):
+        """Jeśli żądanie pochodzi od HTMX, renderuj tylko tabelę."""
+        if self.request.user.is_authenticated:
+            if self.request.htmx: 
+                return render(self.request, "processes_table.html", context)
+            return super().render_to_response(context, **response_kwargs)
+        else:   
+            return redirect('login')
+
+
 class StopedTable(tables.Table):
     id = tables.Column(orderable=True)
     timestamp = tables.Column(orderable=True)

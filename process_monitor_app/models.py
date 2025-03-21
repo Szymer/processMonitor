@@ -40,7 +40,7 @@ class StoredProcess(models.Model):
 class StoppedProcess(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     author = models.CharField(max_length=200)
-    name =  models.CharField(max_length=200, db_default= "Unknow")
+    name =  models.CharField(max_length=200, db_default= "Unknown")
     
     def __str__(self):
         return f"Process {self.name} stopped by {self.author} at {self.timestamp}"

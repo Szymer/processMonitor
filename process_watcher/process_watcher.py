@@ -56,7 +56,7 @@ class ProcessReader():
         
         if len(cached_processes)==0:
             db_processes = Process.objects.all().delete()
-            db_processes2 = Snapshot.objects.all().delete()
+            # db_processes2 = Snapshot.objects.all().delete()
         
         processes = set(processes)
         to_delete = cached_processes.keys() - processes
