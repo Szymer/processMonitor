@@ -15,6 +15,34 @@
   {% endblock title%}
 </head>
 <body>
+  <div id="modals-here"
+    class="modal modal-blur fade"
+    style="display: none"
+    aria-hidden="false"
+    tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content"></div>
+    </div>
+</div>
+  {% if messages %}
+    {% for message in messages %}
+
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">{{message.level_tag}}</h5>
+            </div>
+            <div class="modal-body">
+              <p>{{ message }}</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="location.reload();">Close</button>
+            </div>
+          </div>
+        </div>
+    {% endfor %}
+{% endif %}
+
   {% block content %}
    
   {% endblock content  %}

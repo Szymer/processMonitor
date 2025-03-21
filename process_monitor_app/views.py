@@ -1,5 +1,5 @@
 import uuid
-from django.http import HttpResponse
+
 import psutil
 import django_tables2 as tables
 import django_filters
@@ -7,7 +7,7 @@ import xlwt
 from  datetime import datetime, timezone
 
 
-
+from django.http import HttpResponse
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin
 from django.shortcuts import render, redirect
@@ -20,6 +20,7 @@ from django.contrib.auth import login, authenticate
 from django.db.models import Q
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.contrib import messages
 
 
 from process_monitor_app.models import Process, StoppedProcess, StoredProcess,Snapshot
@@ -33,6 +34,7 @@ class HomeView(View):
     def get(self, request):
         return render(request, "index.html")
     
+
 class LoginView(View):
     def get(self, request):
         return render(request, "login.html")
@@ -45,50 +47,66 @@ class LoginView(View):
             return redirect('process_list')
         else:
             return redirect('login')
-    
+
+#region processes
 class ProcessFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains')  # Filtrowanie po nazwie procesu
     class Meta:
         model = Process
         fields = ['PID','name', 'status']
-class StopProcessView(View):
+
+
+class ProcessTable(tables.Table):
     
-    def post(self, request, process_id, pid):
-       
-        try:
-            process = Process.objects.get(PID=pid)
-            iid_str = f"{process_id}--{process.PID}--{process.name}--{process.start_time}"
-            iid = uuid.uuid5(uuid.NAMESPACE_DNS, iid_str)
-            
-            try:
-                real_process = psutil.Process(pid=pid)
-                if real_process.name() not in UNSTOPABLE and real_process.pid != 1:
-                    real_process.kill()
-            except psutil.NoSuchProcess:
-                return redirect('process_list')   
-            
-            stopped_proc = StoppedProcess(timestamp=datetime.now(), author=request.user.username)
-            stopped_proc.save()
-                 
-            stored_process = StoredProcess(
-                iid = iid,   
-                PID = process.PID,
-                name = process.name,
-                status = process.status,
-                start_time = process.start_time,
-                duration = process.duration,
-                memory_usage_MB = process.memory_usage_MB,
-                CPU_Usage_Percent = process.CPU_Usage_Percent,
-                stopped = stopped_proc
-            )
-            stored_process.save()
-            process.delete()
-            return redirect('process_list')
-        except Exception as e:
-            print(e)
-            return redirect('process_list')
+    stop = tables.Column(empty_values=(), orderable=False, verbose_name="Action")
+    PID = tables.Column(orderable=True)
+    name = tables.Column(orderable=True)
+    status = tables.Column(orderable=True)
+    start_time = tables.Column(orderable=True)
+    duration = tables.Column(orderable=True)
+    memory_usage_MB = tables.Column(orderable=True, verbose_name="Memory (MB)")
+    CPU_Usage_Percent = tables.Column(orderable=True, verbose_name="CPU (%)")
+    
+
+    def render_stop(self, record):
+        stop_url = reverse("stop_process", args=[ record.id, record.PID])
+        return format_html(
+          '<button hx-post="{}" '
+            'hx-trigger="click" '
+            'hx-confirm="Are you sure you want to stop this process?" '
+            'hx-target="closest tr" '
+            'hx-swap="outerHTML" '
+            'class="btn btn-danger">Stop</button>',
+            stop_url
+             )
+    class Meta:
+        fields = ("PID", "name", "status", "start_time", "duration", "memory_usage_MB", "CPU_Usage_Percent")
 
 
+class ProcessListView(SingleTableMixin, FilterView):
+    model = Process
+    table_class = ProcessTable
+    template_name = 'htmxprocess.html'
+    filterset_class = ProcessFilter
+    paginate_by = 42
+    ordering = ['PID']  
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["last_loaded"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return context
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.user.is_authenticated:
+            if self.request.htmx: 
+                return render(self.request, "processes_table.html", context)
+            return super().render_to_response(context, **response_kwargs)
+        else:   
+            return redirect('login')
+#endregion    
+
+
+#region snapshot
 class SnapshotView(View):
     
     def post(self, request):
@@ -192,6 +210,8 @@ class SnapshotDetailedView(SingleTableMixin, FilterView):
             return super().render_to_response(context, **response_kwargs)
         else:   
             return redirect('login')
+
+
 class SnapshotListView(SingleTableMixin, View):
     model = Snapshot
     table_class = SnapshotTable
@@ -264,104 +284,61 @@ class ExportSnapshotView(View):
         wb.save(response) 
         return response
 
+
+#endregion 
+
+#region stop process
+class StopProcessView(View):
+    
+    def post(self, request, process_id, pid):
        
-class ProcessTable(tables.Table):
-    
-    stop = tables.Column(empty_values=(), orderable=False, verbose_name="Action")
-    PID = tables.Column(orderable=True)
-    name = tables.Column(orderable=True)
-    status = tables.Column(orderable=True)
-    start_time = tables.Column(orderable=True)
-    duration = tables.Column(orderable=True)
-    memory_usage_MB = tables.Column(orderable=True, verbose_name="Memory (MB)")
-    CPU_Usage_Percent = tables.Column(orderable=True, verbose_name="CPU (%)")
-    
-    def __init__(self, *args, show_stop=True, **kwargs):
-        super().__init__(*args, **kwargs)
-        if not show_stop:
-            del self.base_columns['stop']
-    
-    def render_stop(self, record):
-        stop_url = reverse("stop_process", args=[ record.id, record.PID])
-        return format_html(
-          '<button hx-post="{}" '
-            'hx-trigger="click" '
-            'hx-confirm="Are you sure you want to stop this process?" '
-            'hx-target="closest tr" '
-            'hx-swap="outerHTML" '
-            'class="btn btn-danger">Stop</button>',
-            stop_url
-             )
-    class Meta:
-        fields = ("PID", "name", "status", "start_time", "duration", "memory_usage_MB", "CPU_Usage_Percent")
+        try:
+            process = Process.objects.get(PID=pid)
+            iid_str = f"{process_id}--{process.PID}--{process.name}--{process.start_time}"
+            iid = uuid.uuid5(uuid.NAMESPACE_DNS, iid_str)
+            
+            try:
+                real_process = psutil.Process(pid=pid)
+                if real_process.name() not in UNSTOPABLE and real_process.pid != 1:
+                    try:
+                        real_process.kill()
+                    except  Exception as e:
+                        messages.warning(request, f'{e.__context__.strerror}')
+                        return redirect("process_list")
 
-
-class ProcessListView(SingleTableMixin, FilterView):
-    model = Process
-    table_class = ProcessTable
-    template_name = 'htmxprocess.html'
-    filterset_class = ProcessFilter
-    paginate_by = 42
-    ordering = ['PID']  
-    
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["last_loaded"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        return context
-
-
-
-    def render_to_response(self, context, **response_kwargs):
-        """Jeśli żądanie pochodzi od HTMX, renderuj tylko tabelę."""
-        if self.request.user.is_authenticated:
-            if self.request.htmx: 
-                return render(self.request, "processes_table.html", context)
-            return super().render_to_response(context, **response_kwargs)
-        else:   
-            return redirect('login')
-
+            except psutil.NoSuchProcess:
+                messages.warning(request, f'{e.__context__.strerror}')
+                return redirect('process_list')   
+            stopped_proc = StoppedProcess(timestamp=datetime.now(), author=request.user.username, name = process.name)
+            stopped_proc.save()
+            process.delete()
+            return redirect('process_list')
+        except Exception as e:
+            print(e)
+            return redirect('process_list')
 
 class StopedTable(tables.Table):
     id = tables.Column(orderable=True)
     timestamp = tables.Column(orderable=True)
-    author = tables.Column(orderable=True)
-    process_name = tables.Column(empty_values=(), verbose_name="Process Name")
-    
-    def render_process_name(self,record): 
-        try:
-            process = StoredProcess.objects.filter(StoppedProcess= record.id).first()
-            if process:     
-                return process.name
-        except Exception as e:
-            print(e)
-        return "Unknown"
+    author = tables.Column(orderable=True, verbose_name="user name")
     class Meta:
         model = StoppedProcess
-        template_name = "django_tables2/bootstrap5.html" # Szablon Bootstrapa
-        fields = ("id", "author", "timestamp",)
-        attrs = {"class": "table table-striped"}  
+        fields = ("id","timestamp","name")
 
- 
-class StoppedProcessesView(SingleTableMixin, View):
+
+class StoppedProcessesView(SingleTableMixin, FilterView):
     model = StoppedProcess
     table_class = StopedTable
     template_name = 'stopped.html'
     paginate_by = 42
-    ordering = ['process__PID']  
+    ordering = ['id']  
 
-    def get(self, request, *args, **kwargs):
-
+    def render_to_response(self, context, **response_kwargs):
         if self.request.user.is_authenticated:
-            stopped= StoppedProcess.objects.all()
-            table = self.table_class(stopped)
-            context = {"table": table}
-            
-            if request.htmx:
-                return render(request, "stopped_table.html", context)  
-            
-            return render(request, self.template_name, context)  
-        else:
+            if self.request.htmx: 
+                return render(self.request, "ptopped_table.html", context)
+            return super().render_to_response(context, **response_kwargs)
+        else:   
             return redirect('login')
-
+#endregion
 
