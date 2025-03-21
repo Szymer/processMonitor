@@ -2,7 +2,7 @@ import os
 import psutil
 from   datetime import datetime, timezone as tz
 import time
-from process_monitor_app.models import Process, Snapshot
+from process_monitor_app.models import Process
 
 
 
@@ -53,11 +53,9 @@ class ProcessReader():
 
     def process_classification(self, processes: psutil.process_iter):
         cached_processes  = self.cache
-        
+        #delleting old proceses after app start
         if len(cached_processes)==0:
-            db_processes = Process.objects.all().delete()
-            # db_processes2 = Snapshot.objects.all().delete()
-        
+            Process.objects.all().delete()
         processes = set(processes)
         to_delete = cached_processes.keys() - processes
         to_add = processes - cached_processes.keys()

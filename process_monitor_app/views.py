@@ -4,7 +4,7 @@ import psutil
 import django_tables2 as tables
 import django_filters
 import xlwt
-from  datetime import datetime, timezone
+from  datetime import datetime
 
 
 from django.http import HttpResponse
@@ -15,11 +15,7 @@ from django.views import View
 from django.db.models import Sum
 from django.urls import reverse
 from django.utils.html import format_html
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
-from django.db.models import Q
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
 from django.contrib import messages
 
 
@@ -267,8 +263,6 @@ class ExportSnapshotView(View):
             for col_num, value in enumerate(row):
                 font_style = xlwt.XFStyle()
                 if isinstance(value, datetime):
-                    date_filed = row[col_num]
-                    date_naiv = date_filed.replace(tzinfo=None)
                     font_style.num_format_str = 'dd/mm/yyyy hh:mm:ss'
                 if value is None:
                     value = 'null'
@@ -294,9 +288,6 @@ class StopProcessView(View):
        
         try:
             process = Process.objects.get(PID=pid)
-            iid_str = f"{process_id}--{process.PID}--{process.name}--{process.start_time}"
-            iid = uuid.uuid5(uuid.NAMESPACE_DNS, iid_str)
-            
             try:
                 real_process = psutil.Process(pid=pid)
                 if real_process.name() not in UNSTOPABLE and real_process.pid != 1:
@@ -306,7 +297,7 @@ class StopProcessView(View):
                         messages.warning(request, f'{e.__context__.strerror}')
                         return redirect("process_list")
 
-            except psutil.NoSuchProcess:
+            except psutil.NoSuchProcess as e:
                 messages.warning(request, f'{e.__context__.strerror}')
                 return redirect('process_list')   
             stopped_proc = StoppedProcess(timestamp=datetime.now(), author=request.user.username, name = process.name)
