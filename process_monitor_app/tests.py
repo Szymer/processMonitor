@@ -7,7 +7,7 @@ from process_monitor_app.models import Process, Snapshot, StoppedProcess, Stored
 class ProcessModelTest(TestCase):
 
     def test_create_process(self):
-        """Testuje, czy Process poprawnie się zapisuje do bazy danych"""
+        """Testuje, czy Process po   prawnie się zapisuje do bazy danych"""
         process = Process.objects.create(
             PID=1234,
             name="Test Process",

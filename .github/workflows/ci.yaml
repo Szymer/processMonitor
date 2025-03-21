@@ -27,7 +27,8 @@ jobs:
 
       - name: Run Ruff (Linting)
         run: ruff check .
-
+      - name: Set DJANGO_SETTINGS_MODULE environment variable
+        run: echo "DJANGO_SETTINGS_MODULE=process_monitor.settings" >> $GITHUB_ENV 
       - name: Run Tests
         run: pytest
       - name: Run Migrations (Django)
