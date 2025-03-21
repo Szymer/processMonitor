@@ -19,7 +19,6 @@ class ProcessMonitorAppConfig(AppConfig):
     def start_process_reader(self):
         """Runs process_reader in a separate thread"""
         time.sleep(5)
-        from process_monitor_app.management.commands.process_reader import \
-            Command
+        from process_monitor_app.management.commands.process_reader import Command
 
         Command().handle()

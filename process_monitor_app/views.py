@@ -16,8 +16,7 @@ from django.views import View
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin
 
-from process_monitor_app.models import (Process, Snapshot, StoppedProcess,
-                                        StoredProcess)
+from process_monitor_app.models import Process, Snapshot, StoppedProcess, StoredProcess
 
 # Lista procesów, które nie mogą być zatrzymane tak dla przykładu
 UNSTOPABLE = [
