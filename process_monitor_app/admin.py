@@ -1,3 +1,9 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Process
+
+class ProcessAdmin(admin.ModelAdmin):
+    list_display = ('name', 'PID', 'status')
+    search_fields = ('name',)
+
+admin.site.register(Process, ProcessAdmin)
