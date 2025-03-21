@@ -1,26 +1,23 @@
 import uuid
-
-import psutil
-import django_tables2 as tables
-import django_filters
-import xlwt
 from datetime import datetime
 
-
-from django.http import HttpResponse
-from django_filters.views import FilterView
-from django_tables2 import SingleTableMixin
-from django.shortcuts import render, redirect
-from django.views import View
+import django_filters
+import django_tables2 as tables
+import psutil
+import xlwt
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
 from django.db.models import Sum
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.html import format_html
-from django.contrib.auth import login, authenticate
-from django.contrib import messages
+from django.views import View
+from django_filters.views import FilterView
+from django_tables2 import SingleTableMixin
 
-
-from process_monitor_app.models import Process, StoppedProcess, StoredProcess, Snapshot
-
+from process_monitor_app.models import (Process, Snapshot, StoppedProcess,
+                                        StoredProcess)
 
 # Lista procesów, które nie mogą być zatrzymane tak dla przykładu
 UNSTOPABLE = [

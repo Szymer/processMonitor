@@ -1,7 +1,10 @@
 import os
-import psutil
-from datetime import datetime, timezone as tz
 import time
+from datetime import datetime
+from datetime import timezone as tz
+
+import psutil
+
 from process_monitor_app.models import Process
 
 

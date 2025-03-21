@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.utils.timezone import now
-from process_monitor_app.models import Process, Snapshot, StoredProcess, StoppedProcess
+
+from process_monitor_app.models import (Process, Snapshot, StoppedProcess,
+                                        StoredProcess)
 
 
 class ProcessModelTest(TestCase):
