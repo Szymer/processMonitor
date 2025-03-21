@@ -25,9 +25,6 @@ jobs:
       - name: Run Black (Code Formatter)
         run: black --check .
 
-      - name: Run Isort (Import Sorting)
-        run: isort --check .
-
       - name: Run Ruff (Linting)
         run: ruff check .
 
