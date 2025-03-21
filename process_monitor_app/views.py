@@ -151,7 +151,6 @@ class SnapshotView(View):
                     snapshot=snapshot,
                 )
                 stored_process.save()
-                # snapshot..add(stored_process)
             except Exception as e:
                 print(e)
                 continue
