@@ -12,8 +12,8 @@ class ProcessReader():
         self.cache = {}
 
     def timestamp_parser(self, timestamp: float) -> datetime:
-        naiv_dt = datetime.fromtimestamp(timestamp)
-        aware_timestamp = naiv_dt.replace(tzinfo=tz.utc)
+        naive_dt = datetime.fromtimestamp(timestamp)
+        aware_timestamp = naive_dt.replace(tzinfo=tz.utc)
         return aware_timestamp
     
     def send_process_to_db(self, p: psutil.Process) -> None:    
@@ -53,7 +53,7 @@ class ProcessReader():
 
     def process_classification(self, processes: psutil.process_iter):
         cached_processes  = self.cache
-        #delleting old proceses after app start
+        #deleting old processes after app start
         if len(cached_processes)==0:
             Process.objects.all().delete()
         processes = set(processes)

@@ -189,10 +189,10 @@ class SnapshotDetailedView(SingleTableMixin, FilterView):
     def get_context_data(self, **kwargs):
         """Dodaj sumę CPU i RAM do kontekstu widoku"""
         context = super().get_context_data(**kwargs)
-        snap_proceses = self.get_queryset()
-        total_cpu = snap_proceses.aggregate(Sum('CPU_Usage_Percent'))['CPU_Usage_Percent__sum'] or 0
-        total_ram = snap_proceses.aggregate(Sum('memory_usage_MB'))['memory_usage_MB__sum'] or 0
-        number_of_processes = len(snap_proceses)
+        snap_processes = self.get_queryset()
+        total_cpu = snap_processes.aggregate(Sum('CPU_Usage_Percent'))['CPU_Usage_Percent__sum'] or 0
+        total_ram = snap_processes.aggregate(Sum('memory_usage_MB'))['memory_usage_MB__sum'] or 0
+        number_of_processes = len(snap_processes)
         context['total_cpu'] = total_cpu
         context['total_ram'] = total_ram
         context['nop'] = number_of_processes
@@ -249,7 +249,7 @@ class ExportSnapshotView(View):
         snapshot = Snapshot.objects.get(id=snap_id)
         processes = StoredProcess.objects.filter(snapshot_id = snapshot.id)
         wb = xlwt.Workbook(encoding='utf-8')
-        ws = wb.add_sheet('Proceses')
+        ws = wb.add_sheet('Processes')
         row_num = 0
         font_style = xlwt.XFStyle()
         font_style.font.bold = True
@@ -308,7 +308,7 @@ class StopProcessView(View):
             print(e)
             return redirect('process_list')
 
-class StopedTable(tables.Table):
+class StopPedTable(tables.Table):
     id = tables.Column(orderable=True)
     timestamp = tables.Column(orderable=True)
     author = tables.Column(orderable=True, verbose_name="user name")
@@ -319,7 +319,7 @@ class StopedTable(tables.Table):
 
 class StoppedProcessesView(SingleTableMixin, FilterView):
     model = StoppedProcess
-    table_class = StopedTable
+    table_class = StopPedTable
     template_name = 'stopped.html'
     paginate_by = 42
     ordering = ['id']  
@@ -327,7 +327,7 @@ class StoppedProcessesView(SingleTableMixin, FilterView):
     def render_to_response(self, context, **response_kwargs):
         if self.request.user.is_authenticated:
             if self.request.htmx: 
-                return render(self.request, "ptopped_table.html", context)
+                return render(self.request, "stopped_table.html", context)
             return super().render_to_response(context, **response_kwargs)
         else:   
             return redirect('login')

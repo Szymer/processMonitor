@@ -1,0 +1,41 @@
+name: CI Pipeline
+
+on: [push, pull_request]  # Runs on push & PR
+
+jobs:
+  test:
+    name: Run Tests & Linting
+    runs-on: ubuntu-latest  # Use latest Ubuntu runner
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest black isort ruff  # Replacing flake8 with ruff
+
+      - name: Run Black (Code Formatter)
+        run: black --check .
+
+      - name: Run Isort (Import Sorting)
+        run: isort --check .
+
+      - name: Run Ruff (Linting)
+        run: ruff check .
+
+      - name: Run Tests
+        run: pytest
+      - name: Run Migrations (Django)
+        run: |
+          python manage.py migrate
+          python manage.py collectstatic --noinput
+
+      

@@ -10,17 +10,16 @@ class ProcessMonitorAppConfig(AppConfig):
     
     
     def ready(self):
-        """Uruchamia process_reader po starcie Django"""
-        if 'runserver' in sys.argv:  # Sprawdza, czy uruchomiono serwer
+        """Starts process_reader after Django starts"""
+        if 'runserver' in sys.argv:  
             print("Uruchamianie ProcessReader...")
             
             threading.Thread(target=self.start_process_reader, daemon=True).start()
     
     
     def start_process_reader(self):
-        """Uruchamia process_reader w osobnym wątku"""
-        time.sleep(5)  # Krótka pauza, by uniknąć błędów inicjalizacji
-        
+        """Runs process_reader in a separate thread"""
+        time.sleep(5)  
         from process_monitor_app.management.commands.process_reader import Command
         Command().handle()
   
