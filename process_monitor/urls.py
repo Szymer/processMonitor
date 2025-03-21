@@ -18,10 +18,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from process_monitor_app.views import (ExportSnapshotView, HomeView, LoginView,
-                                       ProcessListView, SnapshotDetailedView,
-                                       SnapshotListView, SnapshotView,
-                                       StoppedProcessesView, StopProcessView)
+from process_monitor_app.views import (
+    ExportSnapshotView,
+    HomeView,
+    LoginView,
+    ProcessListView,
+    SnapshotDetailedView,
+    SnapshotListView,
+    SnapshotView,
+    StoppedProcessesView,
+    StopProcessView,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
