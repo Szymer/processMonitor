@@ -56,7 +56,7 @@ class LoginView(View):
             login(request, user)
             return redirect("process_list")
         else:
-            messages.warning(request, f"Wrong password or user does not exist")
+            messages.warning(request, "Wrong password or user does not exist")
             return redirect("login")
 
 
