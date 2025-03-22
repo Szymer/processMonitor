@@ -29,11 +29,13 @@ from process_monitor_app.views import (
     StoppedProcessesView,
     StopProcessView,
 )
+from process_monitor_app.views import logout_view as logout
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("home/", HomeView.as_view(), name="home"),
     path("login/", LoginView.as_view(), name="login"),
+    path("logout/", logout, name="logout"),
     path("processes/", ProcessListView.as_view(), name="process_list"),
     path(
         "processes/stop/<int:process_id>&<int:pid>/",

@@ -12,6 +12,7 @@
     </style>
   {% block title%}
   <title>HOME </title>
+  
   {% endblock title%}
 </head>
 <body>
@@ -24,6 +25,12 @@
         <div class="modal-content"></div>
     </div>
 </div>
+{% if user.is_authenticated %}
+  <form method="post" action="{% url 'logout' %}" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn">🚪 Logout</button>
+  </form>
+{% endif %}
   {% if messages %}
     {% for message in messages %}
 

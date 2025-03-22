@@ -79,23 +79,23 @@ WSGI_APPLICATION = "process_monitor.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
-
 # DATABASES = {
 #     "default": {
-#         "HOST": "127.0.0.1",
-#         "PORT": "5433",
-#         "ENGINE": "django.db.backends.postgresql_psycopg2",
-#         "NAME": "pm",
-#         "USER": "postgres",
-#         "PASSWORD": "coderslab",
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
 #     }
 # }
+
+DATABASES = {
+    "default": {
+        "HOST": "127.0.0.1",
+        "PORT": "5433",
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "pm",
+        "USER": "postgres",
+        "PASSWORD": "coderslab",
+    }
+}
 # # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -113,7 +113,7 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-
+LOGOUT_REDIRECT_URL = "/login/"
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/

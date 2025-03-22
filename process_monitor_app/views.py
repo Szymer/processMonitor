@@ -6,7 +6,7 @@ import django_tables2 as tables
 import psutil
 import xlwt
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -15,6 +15,7 @@ from django.utils.html import format_html
 from django.views import View
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin
+
 
 from process_monitor_app.models import Process, Snapshot, StoppedProcess, StoredProcess
 
@@ -55,7 +56,12 @@ class LoginView(View):
             login(request, user)
             return redirect("process_list")
         else:
+            messages.warning(request, f"Wrong password or user does not exist")
             return redirect("login")
+
+
+def logout_view(request):
+    return logout(request)
 
 
 # region processes
