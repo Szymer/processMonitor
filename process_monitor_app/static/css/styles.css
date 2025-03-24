@@ -15,6 +15,10 @@ h1 {
     font-size: 24px;
     margin-bottom: 15px;
 }
+p {
+    color: #141414;
+
+}
 
 /* Styl przycisku Snapshot */
 .snapshot-btn {
@@ -22,7 +26,7 @@ h1 {
     margin-bottom: 15px;
     padding: 10px 20px;
     background-color: #007BFF;
-    color: white;
+    color: rgb(22, 21, 21);
     border: none;
     border-radius: 5px;
     font-size: 14px;
