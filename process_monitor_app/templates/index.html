@@ -16,6 +16,29 @@
   {% endblock title%}
 </head>
 <body>
+
+  <div class="container text-end mt-1" >
+
+    {% if user.is_authenticated %}
+      {% if request.resolver_match.url_name != "home" %}
+          <form method="get" action="{% url 'home' %}" class="d-inline">
+            {% csrf_token %}
+          <button type="submit" class="btn-home">🏠 Home</button>
+          </form>
+       {%endif%}
+      <form method="post" action="{% url 'logout' %}" class="d-inline">
+          {% csrf_token %}
+          <button type="submit" class="btn-end">🚪 Logout</button>
+      </form>
+    {% endif %}
+  
+  </div>
+
+
+<div class="container text-left mt-2" style = "background-color:black" >
+  <img src="https://www.aptiv.com/Assets/aptiv-logo.svg" class="img-fluid rounded shadow" alt="Process Monitor" style="background-color: black;">
+</div>
+
   <div id="modals-here"
     class="modal modal-blur fade"
     style="display: none"
@@ -25,13 +48,9 @@
         <div class="modal-content"></div>
     </div>
 </div>
-{% if user.is_authenticated %}
-  <form method="post" action="{% url 'logout' %}" class="d-inline">
-      {% csrf_token %}
-      <button type="submit" class="btn">🚪 Logout</button>
-  </form>
-{% endif %}
+
   {% if messages %}
+  <div class="container text-center mt-3"  >
     {% for message in messages %}
 
         <div class="modal-dialog modal-dialog-centered">
@@ -48,6 +67,7 @@
           </div>
         </div>
     {% endfor %}
+  </div>
 {% endif %}
 
   {% block content %}
