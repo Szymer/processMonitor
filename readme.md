@@ -12,7 +12,7 @@
 ```bash
 git clone https://github.com/Szymer/processMonitor.git
 cd processMonitor
-git checkout pm-0.0.4
+git checkout master
 ```
 
 ### 2. Create and Activate a Virtual Environment  
