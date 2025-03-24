@@ -13,6 +13,37 @@
 
 {% block content %}
 {% load django_tables2 %}
+<div class="container text-end mt-1" >
+
+    {% if user.is_authenticated %}
+      {% if request.resolver_match.url_name != "home" %}
+          <form method="get" action="{% url 'home' %}" class="d-inline">
+            {% csrf_token %}
+          <button type="submit" class="btn-home">🏠 Home</button>
+          </form>
+       {%endif%}
+      <form method="post" action="{% url 'logout' %}" class="d-inline">
+          {% csrf_token %}
+          <button type="submit" class="btn-end">🚪 Logout</button>
+      </form>
+    {% endif %}
+  
+  </div>
+
+
+<div class="container text-left mt-2" style = "background-color:black" >
+  <img src="https://www.aptiv.com/Assets/aptiv-logo.svg" class="img-fluid rounded shadow" alt="Process Monitor" style="background-color: black;">
+</div>
+
+  <div id="modals-here"
+    class="modal modal-blur fade"
+    style="display: none"
+    aria-hidden="false"
+    tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content"></div>
+    </div>
+</div>
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="fw-bold">Snapshots</h1>
