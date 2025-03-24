@@ -1,0 +1,43 @@
+{% extends "index.html" %} 
+
+ 
+ <script>
+    document.body.addEventListener('htmx:configRequest', function(event) {
+        event.detail.headers['X-CSRFToken'] = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    });
+</script> 
+
+{% block title %}
+    <title> STOPPED PROCESSES </title>
+{% endblock title %}
+
+{% block content %}
+{% load django_tables2 %}
+
+<div class="container">
+    <h1>STOPPED PROCESSES </h1
+
+
+    <!-- Tabela -->
+    <div class="table-container">
+        {% render_table table %}
+    </div>
+
+    <!-- Paginacja -->
+    <div class="pagination">
+        {% if table.page.has_previous %}
+            <a href="?page=1" class="page-link">&laquo; First</a>
+            <a href="?page={{ table.page.previous_page_number }}" class="page-link">Previous</a>
+        {% endif %}
+
+        {% if table.page.has_next %}
+            <a href="?page={{ table.page.next_page_number }}" class="page-link">Next</a>
+            <a href="?page={{ table.page.paginator.num_pages }}" class="page-link">Last &raquo;</a>
+        {% endif %}
+    </div>
+</div>
+
+
+{% endblock content %}
+
+<meta name="csrf-token" content="{{ csrf_token }}">

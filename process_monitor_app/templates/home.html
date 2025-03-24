@@ -1,0 +1,28 @@
+{% extends "index.html" %}
+
+{% block title %}
+    <title>Home | Process Monitor</title>
+{% endblock title %}
+
+{% block content %}
+
+
+<div class="container text-center mt-5">
+    <h1 class="display-4 fw-bold text-primary">Welcome in Process Monitor</h1>
+    <p class="lead text-muted">Monitor, manage, and analyze system processes in real time.</p>
+
+
+
+    <div class="d-flex justify-content-center gap-3 mt-4">
+        <a href="{% url 'process_list' %}" class="btn btn-lg btn-outline-primary">
+            <i class="fas fa-tasks"></i> View Processes
+        </a>
+        <a href="{% url 'snapshot_list' %}" class="btn btn-lg btn-outline-success">
+            <i class="fas fa-camera"></i> View Snapshots
+        </a>
+        <a href="{% url 'stopped_list' %}" class="btn btn-lg btn-outline-danger">
+            <i class="fas fa-ban"></i> View Stopped Processes
+        </a>
+    </div>
+</div>
+{% endblock content %}

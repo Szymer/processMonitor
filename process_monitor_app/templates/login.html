@@ -1,0 +1,40 @@
+{% extends "index.html" %}
+
+{% block content %}
+<section id="hero" class="d-flex align-items-center justify-content-center vh-100">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-lg p-4">
+                    <h1 class="text-center mb-4">🔐 LOGIN</h1>
+
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {% if error %}
+                            <div class="alert alert-danger text-center" role="alert">
+                                {{ error }}
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="username" class="form-label">👤 Login</label>
+                            <input type="text" name="username" id="username" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">🔑 Hasło</label>
+                            <input type="password" name="password" id="password" class="form-control" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">🔓 Zaloguj się</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
+
+{% block footer %}
+{% endblock footer %}
